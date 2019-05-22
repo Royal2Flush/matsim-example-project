@@ -18,7 +18,7 @@ public class TravelTimeMain {
 		
 		new MatsimEventsReader(eventManager).readFile(events.toString());
 		
-		System.out.println(handler.getTotalTime());
+		System.out.println(handler.calculateOverallTravelTime());
 		
 	}
 

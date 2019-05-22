@@ -38,13 +38,14 @@ public class AlterModes {
 		Path inputSHPFile = Paths.get(args[1]);
 		Path outFile = Paths.get(inputNetworkFile.toString().replace(".xml.gz", "_modes_altered.xml.gz"));
 		
-		Collection<String> modesToRemove = new ArrayList<String>(2);
+		/*Collection<String> modesToRemove = new ArrayList<String>(2);
 		modesToRemove.add("car");
 		modesToRemove.add("freight");
-		modesToRemove.add("ride");
+		modesToRemove.add("ride");*/
 		
 		AlterModes alter = new AlterModes(inputNetworkFile, inputSHPFile);
-		alter.remove(modesToRemove);
+		//alter.remove(modesToRemove);
+		alter.changeFreespeedTo(1);
 		alter.write(outFile);
 	}
 	
@@ -56,6 +57,14 @@ public class AlterModes {
 		
 		for (SimpleFeature feature : ShapeFileReader.getAllFeatures(inputSHPFile.toString())) {
 			geometries.add((Geometry) feature.getDefaultGeometry());
+		}
+	}
+	
+	public void changeFreespeedTo(double freespeed) {
+		for (Link link : lazySelectLinks()) {
+			if(!link.getId().toString().contains("pt_")) {
+				link.setFreespeed(freespeed);
+			}
 		}
 	}
 
@@ -79,7 +88,7 @@ public class AlterModes {
 		new NetworkWriter(network).write(outputFile.toString());
 	}
 	
-	private Collection<Link> lazySelectLinks() {
+	public Collection<Link> lazySelectLinks() {
 		if (this.linksInsideShape == null) {
 			this.linksInsideShape = new ArrayList<Link>();
 			for (Link link : network.getLinks().values()) {
