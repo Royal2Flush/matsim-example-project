@@ -26,16 +26,16 @@ public class DifferentModesMain {
 		stratSets.setWeight(1);
 		config.strategy().addStrategySettings(stratSets);
 		
-		ModeRoutingParams pars = new ModeRoutingParams("scooter");
-		pars.setBeelineDistanceFactor(1.5);
-		pars.setTeleportedModeSpeed(6.2);
-		config.plansCalcRoute().addModeRoutingParams(pars );
+		ModeRoutingParams scooterOoutingParams = new ModeRoutingParams("scooter");
+		scooterOoutingParams.setBeelineDistanceFactor(1.5);
+		scooterOoutingParams.setTeleportedModeSpeed(6.2);
+		config.plansCalcRoute().addModeRoutingParams(scooterOoutingParams );
 		
-		ModeParams params = new ModeParams("scooter");
-		params.setConstant(4.0);
-		params.setMarginalUtilityOfTraveling(0.);
-		params.setMarginalUtilityOfDistance(-0.1);
-		config.planCalcScore().addModeParams(params);
+		ModeParams scooterModeParams = new ModeParams("scooter");
+		scooterModeParams.setConstant(4.0);
+		scooterModeParams.setMarginalUtilityOfTraveling(0.);
+		scooterModeParams.setMarginalUtilityOfDistance(-0.1);
+		config.planCalcScore().addModeParams(scooterModeParams);
 		
 		String[] modes = {"car", "scooter"};
 		config.changeMode().setModes(modes);
