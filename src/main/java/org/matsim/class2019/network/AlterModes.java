@@ -101,6 +101,10 @@ public class AlterModes {
 		return this.linksInsideShape;
 	}
 	
+	public Collection<Geometry> getAOI() {
+		return this.geometries;
+	}
+	
 	private boolean featureContainsCoord(Coord coord) {
 		return geometries.stream().anyMatch(geom -> geom.contains(MGC.coord2Point(coord)));
 	}

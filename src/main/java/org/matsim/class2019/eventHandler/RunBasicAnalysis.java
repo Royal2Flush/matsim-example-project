@@ -5,6 +5,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.class2019.network.AlterModes;
 import org.matsim.class2019.personAlgorithms.HomeCoordinateCollector;
+import org.matsim.class2019.personAlgorithms.PtInteractionCollector;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.events.EventsUtils;
@@ -36,12 +37,14 @@ public class RunBasicAnalysis {
 		Path baseCaseEventsPath = Paths.get(args[2]);
 		Path policyCaseEventsPath = Paths.get(args[3]);
 		Path baseCasePlansPath = Paths.get(args[4]);
+		Path policyCasePlansPath = Paths.get(args[5]);
 
 		// read in the simulation network
 		Network network = NetworkUtils.createNetwork();
 		new MatsimNetworkReader(network).readFile(networkpath.toString());
 
-		Set<Id<Link>> linksToWatch = new AlterModes(networkpath, shapefile).lazySelectLinks()
+		AlterModes alterModes = new AlterModes(networkpath, shapefile);
+		Set<Id<Link>> linksToWatch = alterModes.lazySelectLinks()
 				.stream().map(l -> l.getId())
 				.collect(Collectors.toSet());
 		
@@ -118,12 +121,28 @@ public class RunBasicAnalysis {
 
 		System.out.println("Difference in travel distances for people who travelled on link: " + (policyCaseDistance - baseCaseDistance));
 		
-		MutableScenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
-		scenario.setNetwork(network);
-		StreamingPopulationReader popReader = new StreamingPopulationReader(scenario);
+		MutableScenario scenarioBase = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
+		scenarioBase.setNetwork(network);
+		StreamingPopulationReader popReaderBase = new StreamingPopulationReader(scenarioBase);
 		HomeCoordinateCollector homeCollector = new HomeCoordinateCollector(agentTravelledOnLinkEventHandler.getPersonOnWatchedLinks());
-		popReader.addAlgorithm(homeCollector);
-		popReader.readFile(baseCasePlansPath.toString());
+		popReaderBase.addAlgorithm(homeCollector);
+		PtInteractionCollector ptCollectorBase = new PtInteractionCollector(affectedPtLinks, alterModes.getAOI());
+		popReaderBase.addAlgorithm(ptCollectorBase);
+		popReaderBase.readFile(baseCasePlansPath.toString());
 		homeCollector.write(Paths.get("homeCoordsAffected.csv"));
+		
+		PtInteractionCollector ptCollectorPol = new PtInteractionCollector(affectedPtLinks, alterModes.getAOI());
+		MutableScenario scenarioPol = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
+		scenarioPol.setNetwork(network);
+		StreamingPopulationReader popReaderPol = new StreamingPopulationReader(scenarioPol);
+		popReaderPol.addAlgorithm(ptCollectorPol);
+		popReaderPol.readFile(policyCasePlansPath.toString());
+		
+		System.out.println("total agents with pt interaction (base): " + ptCollectorBase.getAllPtUsers().size());
+		System.out.println("agents with pt interaction at udl bus stops (base): " + ptCollectorBase.getUdlPtUsersBus().size());
+		System.out.println("agents with pt interaction in altered area (base): " + ptCollectorBase.getUdlPtUsers().size());
+		System.out.println("total agents with pt interaction (policy): " + ptCollectorPol.getAllPtUsers().size());
+		System.out.println("agents with pt interaction at udl bus stops (policy): " + ptCollectorPol.getUdlPtUsersBus().size());
+		System.out.println("agents with pt interaction in altered area (policy): " + ptCollectorPol.getUdlPtUsers().size());
 	}
 }
