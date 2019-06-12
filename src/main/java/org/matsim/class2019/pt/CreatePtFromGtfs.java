@@ -1,5 +1,6 @@
 package org.matsim.class2019.pt;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.NetworkWriter;
 import org.matsim.contrib.gtfs.RunGTFS2MATSim;
@@ -53,7 +54,8 @@ public class CreatePtFromGtfs {
 
 		//Create simple transit vehicles
 		new CreateVehiclesForSchedule(scenario.getTransitSchedule(), scenario.getTransitVehicles()).run();
-
+		scenario.getTransitVehicles().getVehicleTypes().entrySet().forEach(e -> e.getValue().setPcuEquivalents(0));
+		
 		//Write out network, vehicles and schedule
 		new NetworkWriter(scenario.getNetwork()).write(networkFile);
 		new TransitScheduleWriter(scenario.getTransitSchedule()).writeFile(scheduleFile);
