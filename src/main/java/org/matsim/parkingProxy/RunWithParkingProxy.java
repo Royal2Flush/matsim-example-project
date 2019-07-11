@@ -13,6 +13,9 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
+import org.matsim.parkingProxy.penaltyCalculator.MovingEntityCounter;
+import org.matsim.parkingProxy.penaltyCalculator.ParkingVehiclesCountEventHandler;
+import org.matsim.parkingProxy.penaltyCalculator.PenaltyCalculator;
 
 public class RunWithParkingProxy {
 
@@ -34,14 +37,14 @@ public class RunWithParkingProxy {
 			initialCarPositions.add(new Tuple<>(((Activity)p.getSelectedPlan().getPlanElements().get(0)).getCoord(), 100));
 		}
 		MovingEntityCounter carCounter = new MovingEntityCounter(initialCarPositions, 900, 81000, 500);
-		/*ParkingVehiclesCountEventHandler parkingHandler = new ParkingVehiclesCountEventHandler(carCounter, scen.getNetwork(), 100);
+		ParkingVehiclesCountEventHandler parkingHandler = new ParkingVehiclesCountEventHandler(carCounter, scen.getNetwork(), 100);
 		controler.getEvents().addHandler(parkingHandler);
 		
-		controler.addControlerListener(new CarEgressWalkChanger(parkingHandler));*/
-		ParkingCounterByPlans planCounter = new ParkingCounterByPlans(carCounter, 100);
+		controler.addControlerListener(new CarEgressWalkChanger(parkingHandler, new PenaltyCalculator.DummyPenaltyFunction()));
+		/*ParkingCounterByPlans planCounter = new ParkingCounterByPlans(carCounter, 100);
 		controler.addControlerListener(planCounter);
 		
-		controler.addControlerListener(new CarEgressWalkChanger(planCounter));
+		controler.addControlerListener(new CarEgressWalkChanger(planCounter));*/
 		
 		controler.run();
 	}

@@ -1,4 +1,4 @@
-package org.matsim.parkingProxy;
+package org.matsim.parkingProxy.utils;
 
 import java.util.LinkedList;
 import java.util.List;

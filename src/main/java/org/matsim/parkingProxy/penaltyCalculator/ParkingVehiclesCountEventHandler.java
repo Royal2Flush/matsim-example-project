@@ -1,4 +1,4 @@
-package org.matsim.parkingProxy;
+package org.matsim.parkingProxy.penaltyCalculator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +19,7 @@ import org.matsim.vehicles.Vehicle;
 /**
  * Tracks how many vehicles are in a given area at any time based on {@linkplain VehicleEntersTrafficEvent}s and
  * {@linkplain VehicleLeavesTrafficEvent}s. PT vehicles are excluded by tracking the involved vehicles of all
- * {@linkplain TransitDriverStartsEvent}s.
+ * {@linkplain TransitDriverStartsEvent}s. </br>
  * 
  * The functionality of the {@linkplain PenaltyGenerator} interface are delegated to the {@linkplain MovingEntityCounter}
  * received in the constructor.

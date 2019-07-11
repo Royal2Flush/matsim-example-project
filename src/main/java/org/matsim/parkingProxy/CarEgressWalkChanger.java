@@ -7,7 +7,11 @@ import org.matsim.core.controler.events.AfterMobsimEvent;
 import org.matsim.core.controler.events.BeforeMobsimEvent;
 import org.matsim.core.controler.listener.AfterMobsimListener;
 import org.matsim.core.controler.listener.BeforeMobsimListener;
-import org.matsim.parkingProxy.AccessEgressFinder.LegActPair;
+import org.matsim.parkingProxy.penaltyCalculator.PenaltyCalculator;
+import org.matsim.parkingProxy.penaltyCalculator.PenaltyFunction;
+import org.matsim.parkingProxy.penaltyCalculator.PenaltyGenerator;
+import org.matsim.parkingProxy.utils.AccessEgressFinder;
+import org.matsim.parkingProxy.utils.AccessEgressFinder.LegActPair;
 
 /**
  * <p>
@@ -40,14 +44,34 @@ public class CarEgressWalkChanger implements BeforeMobsimListener, AfterMobsimLi
 	public static final String CARMODE = "car";	
 	
 	private final PenaltyGenerator penaltyGenerator;
+	private final PenaltyFunction penaltyFunction;
 	private final AccessEgressFinder egressFinder = new AccessEgressFinder(CARMODE);
 	
 	private PenaltyCalculator penaltyCalculator;
 	
+	/**
+	 * Sets the class up with the {@linkplain PenaltyCalculator.DefaultPenaltyFunction} and the specified {@linkplain PenaltyGenerator}.
+	 * 
+	 * @param penaltyGenerator
+	 */
 	public CarEgressWalkChanger(PenaltyGenerator penaltyGenerator) {
+		this(penaltyGenerator, new PenaltyCalculator.DefaultPenaltyFunction());
+	}
+	
+	/**
+	 * Sets the class up with the specified {@linkplain PenaltyGenerator} and {@linkplain PenaltyFunction}.
+	 * 
+	 * @param penaltyGenerator
+	 * @param penaltyFunction
+	 */
+	public CarEgressWalkChanger(PenaltyGenerator penaltyGenerator, PenaltyFunction penaltyFunction) {
 		this.penaltyGenerator = penaltyGenerator;
+		this.penaltyFunction = penaltyFunction;
 	}
 
+	/**
+	 * gets a new {@linkplain PenaltyCalculator} and prolongs egress times
+	 */
 	@Override
 	public void notifyBeforeMobsim(BeforeMobsimEvent event) {
 		// first we need to update the Penalties to the result of the last iteration
@@ -55,20 +79,19 @@ public class CarEgressWalkChanger implements BeforeMobsimListener, AfterMobsimLi
 			this.penaltyCalculator = PenaltyCalculator.getDummyCalculator();
 		} else {
 			this.penaltyCalculator = this.penaltyGenerator.generatePenaltyCalculator();
-			this.penaltyCalculator.setPenaltyFunction(new PenaltyFunction() {
-				@Override
-				public double calculatePenalty(int numberOfCars) {
-					return numberOfCars * 3600;
-				}
-			});
+			this.penaltyCalculator.setPenaltyFunction(this.penaltyFunction);
 			this.penaltyGenerator.reset();
 		}
-		this.penaltyCalculator.dump(new File(event.getServices().getConfig().controler().getOutputDirectory(), OUTFILE_PENALTIES.replace(INSERTIONKEY, Integer.toString(event.getIteration()))));
+		this.penaltyCalculator.dump(new File(event.getServices().getConfig().controler().getOutputDirectory(),
+				OUTFILE_PENALTIES.replace(INSERTIONKEY, Integer.toString(event.getIteration()))));
 		
 		// then we alter the egressWalk times according to the penalty
 		this.changeEgressTimes(event.getServices().getScenario().getPopulation().getPersons().values(), false);
 	}
 	
+	/**
+	 * resets egress times before scoring / replanning
+	 */
 	@Override
 	public void notifyAfterMobsim(AfterMobsimEvent event) {
 		// we need to roll back the changes we made before the mobsim, otherwise we can't apply
