@@ -1,21 +1,12 @@
 package org.matsim.parkingProxy;
 
-import java.util.Collection;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.parkingProxy.config.ParkingProxyConfigGroup;
-import org.matsim.parkingProxy.penaltyCalculator.InitialLoadGenerator;
-import org.matsim.parkingProxy.penaltyCalculator.LinearPenaltyFunctionWithCap;
-import org.matsim.parkingProxy.penaltyCalculator.MovingEntityCounter;
-import org.matsim.parkingProxy.penaltyCalculator.ParkingCounterByPlans;
-import org.matsim.parkingProxy.penaltyCalculator.ParkingVehiclesCountEventHandler;
-import org.matsim.parkingProxy.penaltyCalculator.PenaltyFunction;
 
 public class RunWithParkingProxy {
 
@@ -33,33 +24,7 @@ public class RunWithParkingProxy {
 		
 		Controler controler = new Controler(scen);
 		
-		Collection<Tuple<Coord, Integer>> initialCarPositions = 
-				new InitialLoadGenerator(scen.getPopulation().getPersons().values(), parkingConfig.getScenarioScaleFactor())
-				.calculateInitialCarPositions(parkingConfig.getCarsPer1000Persons());
-		MovingEntityCounter carCounter = new MovingEntityCounter(
-				initialCarPositions, 
-				parkingConfig.getTimeBinSize(), 
-				(int)config.qsim().getEndTime(),
-				parkingConfig.getGridSize()
-				);
-		PenaltyFunction penaltyFunction = new LinearPenaltyFunctionWithCap(parkingConfig.getDelayPerCar(), parkingConfig.getMaxDelay());
-		
-		switch(parkingConfig.getCalculationMethod()) {
-		case none:
-			break;
-		case events:
-			ParkingVehiclesCountEventHandler parkingHandler = new ParkingVehiclesCountEventHandler(carCounter, scen.getNetwork(), parkingConfig.getScenarioScaleFactor());
-			controler.getEvents().addHandler(parkingHandler);
-			controler.addControlerListener(new CarEgressWalkChanger(parkingHandler, penaltyFunction));
-			break;
-		case plans:
-			ParkingCounterByPlans planCounter = new ParkingCounterByPlans(carCounter, parkingConfig.getScenarioScaleFactor());
-			controler.addControlerListener(planCounter);
-			controler.addControlerListener(new CarEgressWalkChanger(planCounter, penaltyFunction));
-			break;
-		default:
-			throw new RuntimeException("Unsupported calculation method " + parkingConfig.getCalculationMethod());	
-		}
+		controler.addOverridingModule(new ParkingProxyModule(scen));
 		
 		controler.run();
 	}
