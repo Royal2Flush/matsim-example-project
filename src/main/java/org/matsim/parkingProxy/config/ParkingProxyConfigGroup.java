@@ -1,5 +1,7 @@
 package org.matsim.parkingProxy.config;
 
+import java.util.Map;
+
 import org.matsim.core.config.ReflectiveConfigGroup;
 
 public class ParkingProxyConfigGroup extends ReflectiveConfigGroup {
@@ -13,6 +15,7 @@ public class ParkingProxyConfigGroup extends ReflectiveConfigGroup {
 	public static final String SCALE_FACTOR = "scenarioScaleFactor";
 	public static final String TIME_BIN_SIZE = "timeBinSize";
 	public static final String GRID_SIZE = "gridSize";
+	public static final String CARS_PER_1000_PERSONS = "carsPer1000Persons";
 	
 	private CalculationMethod method = CalculationMethod.none;
 	private double delayPerCar = 2.5;
@@ -20,9 +23,23 @@ public class ParkingProxyConfigGroup extends ReflectiveConfigGroup {
 	private int scenarioScaleFactor = 100;
 	private int timeBinSize = 900;
 	private int gridSize = 500;
+	private int carsPer1000Persons = 500;
 
 	public ParkingProxyConfigGroup() {
 		super(GROUP_NAME);
+	}
+	
+	@Override
+	public Map<String, String> getComments() {
+		Map<String, String> comments = super.getComments();
+		comments.put(SCALE_FACTOR, "The inverse of the scenario perentage, i.e. the number with which to multiply the" 
+				+ " number of agents to get the real life population, e.g. 4 in a 25% scenario. Needs to be an Intger,"
+				+ " so in case of weird percentages (e.g. 1/3) please round.");
+		comments.put(DELAY_PER_CAR, "in seconds. Note that this should be scaled MANUALLY with the gridsize!");
+		comments.put(MAX_DELAY, "in seconds. Note that this should be scaled MANUALLY with the gridsize!");
+		comments.put(TIME_BIN_SIZE, "in seconds");
+		comments.put(GRID_SIZE, "in CRS units, usually meters");
+		return comments;
 	}
 	
 	@StringGetter(METHOD)
@@ -77,5 +94,14 @@ public class ParkingProxyConfigGroup extends ReflectiveConfigGroup {
 	@StringSetter(SCALE_FACTOR)
 	public void setScenarioScaleFactor(int scenarioScaleFactor) {
 		this.scenarioScaleFactor = scenarioScaleFactor;
+	}
+	
+	@StringGetter(CARS_PER_1000_PERSONS)
+	public int getCarsPer1000Persons() {
+		return carsPer1000Persons;
+	}
+	@StringSetter(CARS_PER_1000_PERSONS)
+	public void setCarsPer1000Persons(int carsPer1000Persons) {
+		this.carsPer1000Persons = carsPer1000Persons;
 	}
 }

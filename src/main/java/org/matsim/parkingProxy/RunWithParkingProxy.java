@@ -1,12 +1,8 @@
 package org.matsim.parkingProxy;
 
 import java.util.Collection;
-import java.util.LinkedList;
-
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -14,6 +10,7 @@ import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.parkingProxy.config.ParkingProxyConfigGroup;
+import org.matsim.parkingProxy.penaltyCalculator.InitialLoadGenerator;
 import org.matsim.parkingProxy.penaltyCalculator.LinearPenaltyFunctionWithCap;
 import org.matsim.parkingProxy.penaltyCalculator.MovingEntityCounter;
 import org.matsim.parkingProxy.penaltyCalculator.ParkingCounterByPlans;
@@ -36,10 +33,9 @@ public class RunWithParkingProxy {
 		
 		Controler controler = new Controler(scen);
 		
-		Collection<Tuple<Coord, Integer>> initialCarPositions = new LinkedList<Tuple<Coord, Integer>>();
-		for (Person p : scen.getPopulation().getPersons().values()) {
-			initialCarPositions.add(new Tuple<>(((Activity)p.getSelectedPlan().getPlanElements().get(0)).getCoord(), parkingConfig.getScenarioScaleFactor()));
-		}
+		Collection<Tuple<Coord, Integer>> initialCarPositions = 
+				new InitialLoadGenerator(scen.getPopulation().getPersons().values(), parkingConfig.getScenarioScaleFactor())
+				.calculateInitialCarPositions(parkingConfig.getCarsPer1000Persons());
 		MovingEntityCounter carCounter = new MovingEntityCounter(
 				initialCarPositions, 
 				parkingConfig.getTimeBinSize(), 
