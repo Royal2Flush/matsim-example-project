@@ -13,15 +13,19 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
+import org.matsim.parkingProxy.config.ParkingProxyConfigGroup;
+import org.matsim.parkingProxy.penaltyCalculator.LinearPenaltyFunctionWithCap;
 import org.matsim.parkingProxy.penaltyCalculator.MovingEntityCounter;
+import org.matsim.parkingProxy.penaltyCalculator.ParkingCounterByPlans;
 import org.matsim.parkingProxy.penaltyCalculator.ParkingVehiclesCountEventHandler;
-import org.matsim.parkingProxy.penaltyCalculator.PenaltyCalculator;
+import org.matsim.parkingProxy.penaltyCalculator.PenaltyFunction;
 
 public class RunWithParkingProxy {
 
 	public static void main(String[] args) {
 		
-		Config config = ConfigUtils.loadConfig(args[0]);
+		ParkingProxyConfigGroup parkingConfig = new ParkingProxyConfigGroup();
+		Config config = ConfigUtils.loadConfig(args[0], parkingConfig);
 
 		config.controler().setLastIteration(100);
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.overwriteExistingFiles);
@@ -34,17 +38,32 @@ public class RunWithParkingProxy {
 		
 		Collection<Tuple<Coord, Integer>> initialCarPositions = new LinkedList<Tuple<Coord, Integer>>();
 		for (Person p : scen.getPopulation().getPersons().values()) {
-			initialCarPositions.add(new Tuple<>(((Activity)p.getSelectedPlan().getPlanElements().get(0)).getCoord(), 100));
+			initialCarPositions.add(new Tuple<>(((Activity)p.getSelectedPlan().getPlanElements().get(0)).getCoord(), parkingConfig.getScenarioScaleFactor()));
 		}
-		MovingEntityCounter carCounter = new MovingEntityCounter(initialCarPositions, 900, 81000, 500);
-		ParkingVehiclesCountEventHandler parkingHandler = new ParkingVehiclesCountEventHandler(carCounter, scen.getNetwork(), 100);
-		controler.getEvents().addHandler(parkingHandler);
+		MovingEntityCounter carCounter = new MovingEntityCounter(
+				initialCarPositions, 
+				parkingConfig.getTimeBinSize(), 
+				(int)config.qsim().getEndTime(),
+				parkingConfig.getGridSize()
+				);
+		PenaltyFunction penaltyFunction = new LinearPenaltyFunctionWithCap(parkingConfig.getDelayPerCar(), parkingConfig.getMaxDelay());
 		
-		controler.addControlerListener(new CarEgressWalkChanger(parkingHandler, new PenaltyCalculator.DummyPenaltyFunction()));
-		/*ParkingCounterByPlans planCounter = new ParkingCounterByPlans(carCounter, 100);
-		controler.addControlerListener(planCounter);
-		
-		controler.addControlerListener(new CarEgressWalkChanger(planCounter));*/
+		switch(parkingConfig.getCalculationMethod()) {
+		case none:
+			break;
+		case events:
+			ParkingVehiclesCountEventHandler parkingHandler = new ParkingVehiclesCountEventHandler(carCounter, scen.getNetwork(), parkingConfig.getScenarioScaleFactor());
+			controler.getEvents().addHandler(parkingHandler);
+			controler.addControlerListener(new CarEgressWalkChanger(parkingHandler, penaltyFunction));
+			break;
+		case plans:
+			ParkingCounterByPlans planCounter = new ParkingCounterByPlans(carCounter, parkingConfig.getScenarioScaleFactor());
+			controler.addControlerListener(planCounter);
+			controler.addControlerListener(new CarEgressWalkChanger(planCounter, penaltyFunction));
+			break;
+		default:
+			throw new RuntimeException("Unsupported calculation method " + parkingConfig.getCalculationMethod());	
+		}
 		
 		controler.run();
 	}
