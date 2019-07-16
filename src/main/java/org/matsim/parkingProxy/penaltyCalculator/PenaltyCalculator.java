@@ -63,6 +63,7 @@ public class PenaltyCalculator {
 	 * @return the penalty in the space-time-bin
 	 */
 	public double getPenalty(double time, double x, double y) {
+		time = Math.max(0,  time);
 		int timebin = TimeBinUtils.getTimeBinIndex(time, this.timeBinSize, this.numberOfTimeBins);
 		int cars = this.numberOfEntities[timebin].get(this.hectareMapper.getKey(x, y));
 		return this.penaltyFunction.calculatePenalty(cars);
