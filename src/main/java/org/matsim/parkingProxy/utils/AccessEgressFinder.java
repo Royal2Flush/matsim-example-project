@@ -3,6 +3,7 @@ package org.matsim.parkingProxy.utils;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Plan;
@@ -25,9 +26,6 @@ public class AccessEgressFinder {
 		public Leg leg;
 		public Activity act;
 	}
-	
-	public static final String EGRESSWALK = "egress_walk";
-	public static final String ACCESSWALK = "access_walk";
 	
 	private static enum EgressStage {leg, walk, activity}
 	private static enum AccessStage {activity, walk, leg}
@@ -72,8 +70,8 @@ public class AccessEgressFinder {
 				if (nextStage == EgressStage.leg && leg.getMode().equals(this.legmode)) {
 					// when we're going with the relevant mode the next leg will be an appropriate egress leg.
 					nextStage = EgressStage.walk;
-				} else if (nextStage == EgressStage.walk && leg.getMode().equals(EGRESSWALK)) {
-					// this is our egress walk (we wouldn't be here after a pt interaction). Save this leg (we'll modify it soon).
+				} else if (nextStage == EgressStage.walk && leg.getMode().equals(TransportMode.non_network_walk)) {
+					// this is our egress walk (we wouldn't be here after another mode interaction). Save this leg (we'll modify it soon).
 					// Next up is the activity we came for.
 					pair.leg = leg;
 					nextStage = EgressStage.activity;
@@ -96,7 +94,7 @@ public class AccessEgressFinder {
 		// we need to go through a bit of a hussle here to differentiate between access walks
 		// to cars from those to pt. We basically emulate a state machine cycling through
 		// states defined in the AccessStage enum.
-		AccessStage nextStage = AccessStage.leg; //first state is a leg, because we never start with an egress_walk.
+		AccessStage nextStage = AccessStage.activity; //first state is an act, because we don't have access walks from nowhere.
 		LegActPair pair = new LegActPair();
 		for (PlanElement element : plan.getPlanElements()) {
 			if (element instanceof Activity) {
@@ -110,7 +108,7 @@ public class AccessEgressFinder {
 			} else if (element instanceof Leg) {
 				Leg leg = (Leg) element;
 				if (nextStage == AccessStage.walk) {
-					if (leg.getMode().equals(ACCESSWALK)) {
+					if (leg.getMode().equals(TransportMode.non_network_walk)) {
 						// this may be our access walk. It's an access walk to somewhere, we'll find out about the mode soon enough.
 						pair.leg = leg;
 						nextStage = AccessStage.leg;

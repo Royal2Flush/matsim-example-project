@@ -15,7 +15,7 @@ public class RunWithParkingProxy {
 		ParkingProxyConfigGroup parkingConfig = new ParkingProxyConfigGroup();
 		Config config = ConfigUtils.loadConfig(args[0], parkingConfig);
 
-		config.controler().setLastIteration(100);
+		//config.controler().setLastIteration(100);
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.overwriteExistingFiles);
 		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
 		config.planCalcScore().setWriteExperiencedPlans(true);
