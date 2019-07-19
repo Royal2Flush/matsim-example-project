@@ -10,6 +10,7 @@ public class ParkingProxyConfigGroup extends ReflectiveConfigGroup {
 	
 	public static final String GROUP_NAME = "parkingProxy";
 	public static final String METHOD = "method";
+	public static final String OBSERVE_ONLY = "observeOnly";
 	public static final String DELAY_PER_CAR = "delayPerCar";
 	public static final String MAX_DELAY = "maxDelay";
 	public static final String SCALE_FACTOR = "scenarioScaleFactor";
@@ -18,6 +19,7 @@ public class ParkingProxyConfigGroup extends ReflectiveConfigGroup {
 	public static final String CARS_PER_1000_PERSONS = "carsPer1000Persons";
 	
 	private CalculationMethod method = CalculationMethod.none;
+	private boolean observeOnly = false;
 	private double delayPerCar = 2.5;
 	private double maxDelay = 900;
 	private int scenarioScaleFactor = 100;
@@ -51,6 +53,15 @@ public class ParkingProxyConfigGroup extends ReflectiveConfigGroup {
 		this.method = method;
 	}
 	
+	@StringGetter(OBSERVE_ONLY)
+	public boolean getObserveOnly() {
+		return this.observeOnly;
+	}
+	@StringSetter(OBSERVE_ONLY)
+	public void setObserveOnly(boolean observeOnly) {
+		this.observeOnly = observeOnly;
+	}
+
 	@StringGetter(DELAY_PER_CAR)
 	public double getDelayPerCar() {
 		return this.delayPerCar;
