@@ -70,7 +70,7 @@ public class AccessEgressFinder {
 				if (nextStage == EgressStage.leg && leg.getMode().equals(this.legmode)) {
 					// when we're going with the relevant mode the next leg will be an appropriate egress leg.
 					nextStage = EgressStage.walk;
-				} else if (nextStage == EgressStage.walk && leg.getMode().equals(TransportMode.non_network_walk)) {
+				} else if (nextStage == EgressStage.walk && leg.getMode().equals(TransportMode.walk)) {
 					// this is our egress walk (we wouldn't be here after another mode interaction). Save this leg (we'll modify it soon).
 					// Next up is the activity we came for.
 					pair.leg = leg;
@@ -108,7 +108,7 @@ public class AccessEgressFinder {
 			} else if (element instanceof Leg) {
 				Leg leg = (Leg) element;
 				if (nextStage == AccessStage.walk) {
-					if (leg.getMode().equals(TransportMode.non_network_walk)) {
+					if (leg.getMode().equals(TransportMode.walk)) {
 						// this may be our access walk. It's an access walk to somewhere, we'll find out about the mode soon enough.
 						pair.leg = leg;
 						nextStage = AccessStage.leg;

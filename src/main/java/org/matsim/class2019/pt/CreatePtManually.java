@@ -44,15 +44,12 @@ public class CreatePtManually {
 
 		// read in existing files
 		new TransitScheduleReader(scenario).readFile(transitSchedule.toString());
-		new VehicleReaderV1(scenario.getTransitVehicles()).readFile(transitVehicles.toString());
+		new MatsimVehicleReader(scenario.getTransitVehicles()).readFile(transitVehicles.toString());
 		new MatsimNetworkReader(scenario.getNetwork()).readFile(networkPath.toString());
 
 		// create some transit vehicle type
 		VehicleType type = scenario.getTransitVehicles().getFactory().createVehicleType(Id.create("super-train", VehicleType.class));
 		type.setLength(400);
-		VehicleCapacity capacity = scenario.getTransitVehicles().getFactory().createVehicleCapacity();
-		capacity.setSeats(800);
-		type.setCapacity(capacity);
 		type.setPcuEquivalents(0);
 		scenario.getTransitVehicles().addVehicleType(type);
 
