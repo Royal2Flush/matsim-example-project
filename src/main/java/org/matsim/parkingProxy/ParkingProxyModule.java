@@ -8,10 +8,10 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.parkingProxy.config.ParkingProxyConfigGroup;
+import org.matsim.parkingProxy.penaltyCalculator.ExponentialPenaltyFunctionWithCap;
 import org.matsim.parkingProxy.penaltyCalculator.InitialLoadGenerator;
 import org.matsim.parkingProxy.penaltyCalculator.LinearPenaltyFunctionWithCap;
 import org.matsim.parkingProxy.penaltyCalculator.MovingEntityCounter;
-import org.matsim.parkingProxy.penaltyCalculator.ParkingCounterByPlans;
 import org.matsim.parkingProxy.penaltyCalculator.ParkingVehiclesCountEventHandler;
 import org.matsim.parkingProxy.penaltyCalculator.PenaltyFunction;
 
@@ -50,7 +50,8 @@ public class ParkingProxyModule extends AbstractModule {
 				(int)getConfig().qsim().getEndTime(),
 				parkingConfig.getGridSize()
 				);
-		PenaltyFunction penaltyFunction = new LinearPenaltyFunctionWithCap(parkingConfig.getDelayPerCar(), parkingConfig.getMaxDelay());
+		PenaltyFunction penaltyFunction = new LinearPenaltyFunctionWithCap(parkingConfig.getGridSize(), parkingConfig.getDelayPerCar(), parkingConfig.getMaxDelay());
+		//PenaltyFunction penaltyFunction = new ExponentialPenaltyFunctionWithCap(10, parkingConfig.getGridSize(), parkingConfig.getMaxDelay(), 360);
 		
 		switch(parkingConfig.getCalculationMethod()) {
 		case none:
@@ -65,6 +66,8 @@ public class ParkingProxyModule extends AbstractModule {
 			}
 			break;
 		case plans:
+			throw new RuntimeException("Mode \"plans\" is not working yet. Use \"events\" instead.");
+			/*
 			ParkingCounterByPlans planCounter = new ParkingCounterByPlans(carCounter, parkingConfig.getScenarioScaleFactor());
 			super.addControlerListenerBinding().toInstance(planCounter);
 			if (parkingConfig.getObserveOnly()) {
@@ -72,7 +75,7 @@ public class ParkingProxyModule extends AbstractModule {
 			} else {
 				super.addControlerListenerBinding().toInstance(new CarEgressWalkChanger(planCounter, penaltyFunction));
 			}
-			break;
+			break;*/
 		default:
 			throw new RuntimeException("Unsupported calculation method " + parkingConfig.getCalculationMethod());	
 		}
