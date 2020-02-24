@@ -7,6 +7,8 @@ import org.matsim.parkingProxy.utils.AccessEgressFinder;
 import org.matsim.parkingProxy.utils.AccessEgressFinder.LegActPair;
 
 /**
+ * <b>For some reason not working at the moment</b></br>
+ * 
  * Tracks how many vehicles are in a given area at any time based on the selected Plans of the Persons
  * in the Population.</br>
  * 
@@ -16,6 +18,7 @@ import org.matsim.parkingProxy.utils.AccessEgressFinder.LegActPair;
  * @author tkohl / Senozon
  *
  */
+@Deprecated
 public class ParkingCounterByPlans implements IterationStartsListener, PenaltyGenerator {
 	
 	public static final String CARMODE = "car";	
